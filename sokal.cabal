@@ -15,7 +15,10 @@ maintainer:          nschoem@gmail.com
 build-type:          Simple
 cabal-version:       >=1.8
 
-executable sokal
-  -- main-is:             
-  -- other-modules:       
-  build-depends:       base ==4.6.*
+executable sokal_suck 
+  main-is:          suck.hs   
+  build-depends:    base ==4.6.*, Cabal
+
+executable sokal_spew
+  main-is:          spew.hs
+  build-depends:    base ==4.6.*, Cabal
