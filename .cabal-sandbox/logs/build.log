@@ -1,0 +1,56 @@
+
+package: fast-tagsoup-1.0.6
+os: linux
+arch: x86_64
+compiler: ghc-7.6.3
+client: cabal-install-1.22.3.0
+dependencies: text-icu-0.7.0.1 text-0.11.3.1 tagsoup-0.13.3
+              bytestring-0.10.0.2 base-4.6.0.1
+install-outcome: DependencyFailed text-icu-0.7.0.1
+docs-outcome: NotTried
+tests-outcome: NotTried
+
+package: text-icu-0.7.0.1
+os: linux
+arch: x86_64
+compiler: ghc-7.6.3
+client: cabal-install-1.22.3.0
+dependencies: text-0.11.3.1 deepseq-1.3.0.1 bytestring-0.10.0.2
+              base-4.6.0.1
+install-outcome: ConfigureFailed
+docs-outcome: NotTried
+tests-outcome: NotTried
+
+package: tagsoup-0.13.3
+os: linux
+arch: x86_64
+compiler: ghc-7.6.3
+client: cabal-install-1.22.3.0
+flags: -testprog -download
+dependencies: text-0.11.3.1 containers-0.5.0.0 bytestring-0.10.0.2
+              base-4.6.0.1
+install-outcome: InstallOk
+docs-outcome: NotTried
+tests-outcome: NotTried
+
+package: fast-tagsoup-1.0.6
+os: linux
+arch: x86_64
+compiler: ghc-7.6.3
+client: cabal-install-1.22.3.0
+dependencies: text-icu-0.7.0.1 text-0.11.3.1 tagsoup-0.13.3
+              bytestring-0.10.0.2 base-4.6.0.1
+install-outcome: InstallOk
+docs-outcome: NotTried
+tests-outcome: NotTried
+
+package: text-icu-0.7.0.1
+os: linux
+arch: x86_64
+compiler: ghc-7.6.3
+client: cabal-install-1.22.3.0
+dependencies: text-0.11.3.1 deepseq-1.3.0.1 bytestring-0.10.0.2
+              base-4.6.0.1
+install-outcome: InstallOk
+docs-outcome: NotTried
+tests-outcome: NotTried
