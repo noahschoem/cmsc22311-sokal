@@ -17,7 +17,7 @@ cabal-version:       >=1.8
 
 executable sokal_suck 
   main-is:          suck.hs   
-  build-depends:    base ==4.6.*, Cabal
+  build-depends:    base ==4.6.*, Cabal, HTTP, tagsoup
 
 executable sokal_spew
   main-is:          spew.hs

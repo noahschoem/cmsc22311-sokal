@@ -7,12 +7,26 @@
   (major1) == 1 && (major2) <  16 || \
   (major1) == 1 && (major2) == 16 && (minor) <= 0)
 
+/* package HTTP-4000.2.8 */
+#define VERSION_HTTP "4000.2.8"
+#define MIN_VERSION_HTTP(major1,major2,minor) (\
+  (major1) <  4000 || \
+  (major1) == 4000 && (major2) <  2 || \
+  (major1) == 4000 && (major2) == 2 && (minor) <= 8)
+
 /* package base-4.6.0.1 */
 #define VERSION_base "4.6.0.1"
 #define MIN_VERSION_base(major1,major2,minor) (\
   (major1) <  4 || \
   (major1) == 4 && (major2) <  6 || \
   (major1) == 4 && (major2) == 6 && (minor) <= 0)
+
+/* package tagsoup-0.13.3 */
+#define VERSION_tagsoup "0.13.3"
+#define MIN_VERSION_tagsoup(major1,major2,minor) (\
+  (major1) <  0 || \
+  (major1) == 0 && (major2) <  13 || \
+  (major1) == 0 && (major2) == 13 && (minor) <= 3)
 
 /* tool alex-3.1.0 */
 #define TOOL_VERSION_alex "3.1.0"
