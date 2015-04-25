@@ -11,16 +11,18 @@ where url = "http://wiki.haskell.org/Typeclassopedia"-}
 main = do
   urls <- readFile "1url.txt" >>= (return.lines)
   wepage_responses <- forM urls (\url -> simpleHTTP (getRequest url))
-  raw_data <- mapM getResponseBody wepage_responses-- I should probably change this to catch and warn of connection errors
-  print $ head $ map process raw_data
-    --let a = process raw_data in
-    --    writeFile "sokal.data" $ show a
-    --    return ()
+  raw_data <- mapM getResponseBody wepage_responses -- I should probably change this to catch and warn of connection errors
+  print $ head $ map removeHTMLCrap raw_data
+
   
-process = findOuterCloseDiv . (dropWhile (/= TagOpen "div" [("id","body")])). canonicalizeTags . parseTags where
-  findOuterCloseDiv = iterDiv 1 . tail where
+removeHTMLCrap = extractText . extractDivBody . (dropWhile (/= TagOpen "div" [("id","body")])). canonicalizeTags . parseTags where
+--   removeQuotesAndCommas = filter (\x -> notElem x ['\,','"]
+  extractText [] = []
+  extractText (tag:tags)
+    | tag ~== TagText "" = fromTagText tag ++ extractText tags  -- We are padding whitespace here just in case.
+    | otherwise = extractText tags
+  extractDivBody = iterDiv 1 . tail where
     iterDiv 0 _  = []
-    iterDiv (-1) _ = error "iterDiv failure"
     iterDiv n ((TagOpen "div" attribs):tags)  = (TagOpen "div" attribs):(iterDiv (n+1) tags)
     iterDiv n ((TagClose "div"):tags) = (TagClose "div"):(iterDiv (n-1) tags)
     iterDiv n (tag:tags) = tag:(iterDiv n tags)
