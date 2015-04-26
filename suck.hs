@@ -17,7 +17,7 @@ main = do
   wepage_responses <- forM urls (\url -> simpleHTTP (getRequest url))
   raw_data <- mapM getResponseBody wepage_responses -- I should probably change this to catch and warn of connection errors
   let raw_text = map removeHTMLCrap raw_data in
-    print $ process raw_text
+    writeFile "sokal.model" $ serialize $ process raw_text
     
 type PrimitiveModel = M.Map (String,String) [String]
 
@@ -72,3 +72,6 @@ toProcessedModel interm = zip (map snd indices) (M.elems encodedMap) where
     encode (x,y) (n,b)
       | M.member (y,b) interm = (n,fromJust (M.lookup (y,b) indicesEncoding))
       | otherwise = (n,-1)
+
+serialize :: ProcessedModel -> String
+serialize = (intercalate "\n") . (map show)
