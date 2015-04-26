@@ -5,6 +5,8 @@ import Network.Stream
 import Text.HTML.TagSoup
 import qualified Data.Map as M
 import Data.Char
+import Data.List
+import Data.Maybe
 
 {-main = simpleHTTP (getRequest url) >>= getResponseBody >>= putStr
 where url = "http://wiki.haskell.org/Typeclassopedia"-}
@@ -19,12 +21,13 @@ main = do
     
 type PrimitiveModel = M.Map (String,String) [String]
 
+type IntermediaryModel = M.Map (String,String) [(Int,String)]
+
 type ProcessedModel = [(String,[(Int,Int)])]
     
 -- TODO: Make sure that adding filter isAscii at the beginning doesn't break words from webpages too horribly, like turning Gödel into Gdel.
 removeHTMLCrap :: String -> String
 removeHTMLCrap = extractText . extractDivBody . (dropWhile (/= TagOpen "div" [("id","body")])). canonicalizeTags . parseTags . (filter isAscii) where
---   removeQuotesAndCommas = filter (\x -> notElem x ['\,','"]
   extractText [] = []
   extractText (tag:tags)
     | tag ~== TagText "" = fromTagText tag ++ extractText tags
@@ -35,7 +38,7 @@ removeHTMLCrap = extractText . extractDivBody . (dropWhile (/= TagOpen "div" [("
     iterDiv n ((TagClose "div"):tags) = (TagClose "div"):(iterDiv (n-1) tags)
     iterDiv n (tag:tags) = tag:(iterDiv n tags)
     
-process = {-toProcessedModel .-} toPrimitiveModel
+process = toProcessedModel . toIntermediaryModel . toPrimitiveModel
 
 -- takes webpage text stripped of its HTML tags and spits out a primitive model.
 toPrimitiveModel :: [String] -> PrimitiveModel
@@ -45,8 +48,25 @@ toPrimitiveModel s = prim_model where
   stage3 = concat stage2
   prim_model = M.fromListWith (++) stage3
   
--- Takes a primitive model and spits out a processed model.  
-toProcessedModel prim = proc where
-  proc = prim
-  
-  
+-- Takes a primitive model and spits out an intermediary model.
+toIntermediaryModel :: PrimitiveModel -> IntermediaryModel
+-- Counting the frequency of an element in a list is much easier when that list is sorted.
+toIntermediaryModel prim = M.map (freqCount.sort) prim where
+  freqCount = partialFreqCount [] where
+    partialFreqCount a [] = a
+    partialFreqCount [] (b:bs) = partialFreqCount [(1,b)] bs
+    partialFreqCount ((n,a):as) (b:bs)
+      | a == b    = partialFreqCount ((n+1,a):as) bs
+      | otherwise = partialFreqCount ((1,b):(n+1,a):as) bs
+      
+-- Takes an IntermediaryModel and spits out a ProcessedModel.
+-- The location of a string pair (x,y) in the keys of the IntermediaryModel 
+-- will determine its id.
+-- toProcessedModel :: IntermediaryModel -> ProcessedModel
+toProcessedModel interm = zip (map snd indices) (M.elems encodedMap) where
+  indices = M.keys interm
+  encodedMap = M.mapWithKey (\k -> map (encode k)) interm where
+    encode (x,y) (n,b)
+    -- elemIndex will have to go.  It's too damn slow.  Might be able to optimize by using a better data structure than a list for lookups.
+      | M.member (y,b) interm = (n,fromJust (elemIndex (y,b) indices))
+      | otherwise = (n,-1)
