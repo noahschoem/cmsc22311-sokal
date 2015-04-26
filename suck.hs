@@ -53,7 +53,7 @@ toPrimitiveModel s = prim_model where
 -- Takes a primitive model and spits out an intermediary model.
 toIntermediaryModel :: PrimitiveModel -> IntermediaryModel
 -- Counting the frequency of an element in a list is much easier when that list is sorted.
-toIntermediaryModel prim = M.map (freqCount.sort) prim where
+toIntermediaryModel = M.map (freqCount.sort) where
   freqCount = partialFreqCount [] where
     partialFreqCount a [] = a
     partialFreqCount [] (b:bs) = partialFreqCount [(1,b)] bs
