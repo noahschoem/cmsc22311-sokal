@@ -38,6 +38,8 @@ removeHTMLCrap = extractText . extractDivBody . (dropWhile (/= TagOpen "div" [("
     iterDiv n ((TagClose "div"):tags) = (TagClose "div"):(iterDiv (n-1) tags)
     iterDiv n (tag:tags) = tag:(iterDiv n tags)
     
+-- big catch-all function for processing data.  Takes nicely formatted text and builds a processed model.
+process :: [String] -> ProcessedModel
 process = toProcessedModel . toIntermediaryModel . toPrimitiveModel
 
 -- takes webpage text stripped of its HTML tags and spits out a primitive model.
@@ -62,11 +64,11 @@ toIntermediaryModel prim = M.map (freqCount.sort) prim where
 -- Takes an IntermediaryModel and spits out a ProcessedModel.
 -- The location of a string pair (x,y) in the keys of the IntermediaryModel 
 -- will determine its id.
--- toProcessedModel :: IntermediaryModel -> ProcessedModel
+toProcessedModel :: IntermediaryModel -> ProcessedModel
 toProcessedModel interm = zip (map snd indices) (M.elems encodedMap) where
   indices = M.keys interm
+  indicesEncoding = M.fromList (zip indices [0..((M.size interm) - 1)])
   encodedMap = M.mapWithKey (\k -> map (encode k)) interm where
     encode (x,y) (n,b)
-    -- elemIndex will have to go.  It's too damn slow.  Might be able to optimize by using a better data structure than a list for lookups.
-      | M.member (y,b) interm = (n,fromJust (elemIndex (y,b) indices))
+      | M.member (y,b) interm = (n,fromJust (M.lookup (y,b) indicesEncoding))
       | otherwise = (n,-1)
