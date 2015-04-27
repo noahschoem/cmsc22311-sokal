@@ -17,7 +17,7 @@ main = do
   wepage_responses <- forM urls (\url -> simpleHTTP (getRequest url))
   raw_data <- mapM getResponseBody wepage_responses -- I should probably change this to catch and warn of connection errors
   let raw_text = map removeHTMLCrap raw_data in
-    writeFile "sokal.model" $ serialize $ process raw_text
+    print $ serialize $ process raw_text
     
 type PrimitiveModel = M.Map (String,String) [String]
 
@@ -50,7 +50,7 @@ toPrimitiveModel s = prim_model where
   -- for each list of words w in stage1, builds a list of elements of the form ((x,y),[z]) whenever the pair of words x,y in w is followed by z.
   -- using [z] instead of z is necessary for building the primitive model.
   -- The double application of tail will cause problems when someone writes a postmodernist paper with only one word in it.
-  paperwiseAssocs = map (\x -> (x `zip` tail x) `zip` (map (\a -> [a]) ((tail.tail) x))) stage1
+  paperwiseAssocs = map (\x -> (x `zip` tail x) `zip` (map (\a -> [a]) ((tail (tail x))))) stage1
   -- combines the paperwise associations into a giant list of associations to build into a primitive model.
   assocs = concat paperwiseAssocs
   -- builds a primitive model from assocs.  Use of fromListWith (++) assures that whenever assocs contains ((x,y),[z]) 
