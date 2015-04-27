@@ -1,7 +1,6 @@
 module SuckUtils (serializeAndProcess) where
 
 import qualified Data.Map as M
-import Data.Char
 import Data.List
 import Data.Maybe
 

@@ -3,6 +3,7 @@ import Control.Monad
 import Network.HTTP
 import Network.Stream
 import Text.HTML.TagSoup
+import Data.Char (isAscii)
 import SuckUtils as SuckUtils
 
 {-main = simpleHTTP (getRequest url) >>= getResponseBody >>= putStr
