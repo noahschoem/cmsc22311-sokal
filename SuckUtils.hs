@@ -10,6 +10,7 @@ type IntermediaryModel = M.Map (String,String) [(Int,String)]
 
 type ProcessedModel = [(String,[(Int,Int)])]
  
+-- serializeAndProcess: processes input text into a ProcessedModel, and serializes the result.
 serializeAndProcess :: [String] -> String
 serializeAndProcess = serialize . process
 
@@ -62,5 +63,6 @@ toProcessedModel interm = zip (map snd indices) (M.elems encodedMap) where
       | M.member (y,b) interm = (n,fromJust (M.lookup (y,b) indicesEncoding))
       | otherwise = (n,-1)
 
+-- serialize: serializes a ProcessedModel
 serialize :: ProcessedModel -> String
 serialize = (intercalate "\n") . (map show)
