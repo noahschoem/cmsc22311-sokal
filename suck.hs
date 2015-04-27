@@ -13,11 +13,10 @@ where url = "http://wiki.haskell.org/Typeclassopedia"-}
 
 -- TODO: replace 2urls.txt for testing purposes to urls.txt
 main = do
-  urls <- readFile "urls.txt" >>= (return.lines)
+  urls <- readFile "2urls.txt" >>= (return.lines)
   wepage_responses <- forM urls (\url -> simpleHTTP (getRequest url))
   -- Note the unsafe use of getResponseBody.  If a given webpage response is a ConnError, then this program will fail.
   raw_data <- mapM getResponseBody wepage_responses
-  print raw_data
   let raw_text = map removeHTMLCrap raw_data in
     writeFile "sokal.model" $ serialize $ process raw_text
     
