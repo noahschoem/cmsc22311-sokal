@@ -13,7 +13,7 @@ where url = "http://wiki.haskell.org/Typeclassopedia"-}
 
 -- TODO: replace 2urls.txt for testing purposes to urls.txt
 main = do
-  urls <- readFile "2urls.txt" >>= (return.lines)
+  urls <- readFile "urls.txt" >>= (return.lines)
   wepage_responses <- forM urls (\url -> simpleHTTP (getRequest url))
   raw_data <- mapM getResponseBody wepage_responses -- I should probably change this to catch and warn of connection errors
   let raw_text = map removeHTMLCrap raw_data in
