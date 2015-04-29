@@ -1,13 +1,11 @@
 import Distribution.Simple
-import Control.Monad
-import Control.Monad.State.Lazy
-import System.IO
-import Data.Array
 import System.Random
 import System.Environment
-import Data.List
 import System.Console.GetOpt
-import Data.Maybe
+import System.IO
+import Control.Monad.State.Lazy
+import SpewUtils
+
 
 -- The following is simply for handling command line options.  I probably went a little overboard on getting these to work.
 data Options = Options {optLength :: Int, optSeed :: Maybe Int, optShowSeed :: Bool, optHelp :: Bool} deriving (Eq,Show)
@@ -59,10 +57,9 @@ genSpew opts = do
   if optShowSeed opts
      then hPutStrLn stderr $ "Seed is " ++ show gen
      else return ()
-  let fastModel = listArray (0,length inputModel - 1) (map read inputModel) :: FastModel
-  let ws = evalState (runModel fastModel) gen
-  print $ unwords $ takeEnough (optLength opts) ws
-  
+  let ws = evalState (SpewUtils.runModel inputModel) gen
+  print $ linefill 72 $ takeEnough (optLength opts) ws
+
 -- takeEnough: generates n words, then keeps generating words until the end of a sentence is reached.
 takeEnough :: Int -> [String] -> [String]
 takeEnough n (x:xs)
@@ -71,37 +68,8 @@ takeEnough n (x:xs)
     takeUntilEndOfSentence (x:xs)
       | last x == '.' = [x]
       | otherwise     = x:(takeUntilEndOfSentence xs)
-
--- FastModel at index i is an ordered pair containing the encoding string of i and a list of ordered pairs of ints
--- of the form (weight,another index or -1)
-type FastModel = Array Int (String,[(Int,Int)])
-
-type RandState = State StdGen
-
--- This is heavily inspired (read: copied verbatim then modified) from Lecture 18 from 16100.
-markovSelect :: [(Int,Int)] -> RandState Int
-markovSelect successors = fmap (weightedSelect successors) . state . randomR $ (0,sum $ (map fst) successors) where
-  weightedSelect ((weight,state):remainders) ix
-    | ix - weight <= 0   = state
-    | otherwise = weightedSelect remainders (ix-weight)
-
--- So is this.
-runModel :: FastModel -> RandState [String]
-runModel fastmodel = do
-  start <- state . randomR $ bounds fastmodel
-  iter start where
-    iter ix = do
-      let (ixString,succs) = fastmodel ! ix
-      succ <- markovSelect succs
-      case succ of
-        -1 -> do
-          rest <- (state . randomR) (bounds fastmodel) >>= (\s -> iter s)
-          return $ ixString:rest
-        n  -> do
-          rest <- iter n
-          return $ ixString:rest
         
--- Ibid.
+-- Ripped intact from the CS 16100 notes.
 linefill :: Int -> [String] -> String
 linefill _ [] = "\n"
 linefill n (x:xs) = iter x xs where

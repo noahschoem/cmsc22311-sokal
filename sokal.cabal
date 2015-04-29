@@ -22,4 +22,5 @@ executable sokal_suck
 
 executable sokal_spew
   main-is:          spew.hs
+  other-modules:    SpewUtils
   build-depends:    base ==4.6.*, Cabal, random, array, mtl
