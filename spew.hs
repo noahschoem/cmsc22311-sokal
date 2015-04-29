@@ -20,7 +20,7 @@ main = do
   gen <- getStdGen
   let fastModel = listArray (0,length inputModel - 1) (map read inputModel) :: FastModel
   let ws = evalState (runModel fastModel) gen
-  print $ linefill 100 ws
+  print $ take 100 ws
   
 -- FastModel at index i is an ordered pair containing the encoding string of i and a list of ordered pairs of ints
 -- of the form (weight,another index or -1)
@@ -31,8 +31,9 @@ type RandState = State StdGen
 -- This is heavily inspired (read: copied verbatim then modified) from Lecture 18 from 16100.
 markovSelect :: [(Int,Int)] -> RandState Int
 markovSelect successors = fmap (weightedSelect successors) . state . randomR $ (0,sum $ (map fst) successors) where
+  weightedSelect [] ix = error "Should not get an []"
   weightedSelect ((weight,state):remainders) ix
-    | ix <= 0   = state
+    | ix - weight <= 0   = state
     | otherwise = weightedSelect remainders (ix-weight)
 
 -- So is this.
