@@ -5,7 +5,7 @@ import System.Console.GetOpt
 import System.IO
 import Control.Monad.State.Lazy
 import SpewUtils
-
+import Data.Char
 
 -- |The following is simply for handling command line options.  I probably went a little overboard on getting these to work.
 data Options = Options {optLength :: Int, optSeed :: Maybe Int, optShowSeed :: Bool, optHelp :: Bool} deriving (Eq,Show)
@@ -60,7 +60,8 @@ genSpew opts = do
      then hPutStrLn stderr $ "Seed is " ++ show gen
      else return ()
   let ws = evalState (SpewUtils.runModel inputModel) gen
-  putStr $ linefill 72 $ takeEnough (optLength opts) ws
+  -- the entire purpose of zipWith ($) (toUpper:(repeat id)) is because I got really tired of seeing the first letter of output in lower case.
+  putStr $ zipWith ($) (toUpper:(repeat id))  (linefill 72  (takeEnough (optLength opts) ws))
 
 -- |takeEnough: generates n words, then keeps generating words until the end of a sentence is reached.
 takeEnough :: Int -> [String] -> [String]
