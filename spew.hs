@@ -7,12 +7,14 @@ import Control.Monad.State.Lazy
 import SpewUtils
 
 
--- The following is simply for handling command line options.  I probably went a little overboard on getting these to work.
+-- |The following is simply for handling command line options.  I probably went a little overboard on getting these to work.
 data Options = Options {optLength :: Int, optSeed :: Maybe Int, optShowSeed :: Bool, optHelp :: Bool} deriving (Eq,Show)
                
+-- |defaultOptions: the default program options.
 defaultOptions :: Options
 defaultOptions = Options { optLength = 100, optSeed = Nothing, optShowSeed = False, optHelp = False}
 
+-- |options mapping.
 options :: [OptDescr (Options -> Options)]
 options = 
   [ Option ['l'] ["length"] 
@@ -58,9 +60,9 @@ genSpew opts = do
      then hPutStrLn stderr $ "Seed is " ++ show gen
      else return ()
   let ws = evalState (SpewUtils.runModel inputModel) gen
-  print $ linefill 72 $ takeEnough (optLength opts) ws
+  putStr $ linefill 72 $ takeEnough (optLength opts) ws
 
--- takeEnough: generates n words, then keeps generating words until the end of a sentence is reached.
+-- |takeEnough: generates n words, then keeps generating words until the end of a sentence is reached.
 takeEnough :: Int -> [String] -> [String]
 takeEnough n (x:xs)
   | n > 0     = x:(takeEnough (n-1) xs)
@@ -69,6 +71,7 @@ takeEnough n (x:xs)
       | last x == '.' = [x]
       | otherwise     = x:(takeUntilEndOfSentence xs)
         
+-- |linefill: for avoiding lines that are 10,000 words long.
 -- Ripped intact from the CS 16100 notes.
 linefill :: Int -> [String] -> String
 linefill _ [] = "\n"

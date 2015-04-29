@@ -1,4 +1,4 @@
-module SuckUtils (serializeAndProcess) where
+module SuckUtils (processAndSerialize) where
 
 import qualified Data.Map as M
 import Data.List
@@ -10,15 +10,15 @@ type IntermediaryModel = M.Map (String,String) [(Int,String)]
 
 type ProcessedModel = [(String,[(Int,Int)])]
  
--- serializeAndProcess: processes input text into a ProcessedModel, and serializes the result.
-serializeAndProcess :: [String] -> String
-serializeAndProcess = serialize . process
+-- |processAndSerialize: processes input text into a ProcessedModel, and serializes the result.
+processAndSerialize :: [String] -> String
+processAndSerialize = serialize . process
 
--- big catch-all function for processing data.  Takes nicely formatted text and builds a processed model.
+-- |process: big catch-all function for processing data.  Takes nicely formatted text and builds a processed model.
 process :: [String] -> ProcessedModel
 process = toProcessedModel . toIntermediaryModel . toPrimitiveModel
 
--- takes webpage text stripped of its HTML tags and spits out a primitive model.
+-- |toPrimitiveModel: takes webpage text stripped of its HTML tags and spits out a primitive model.
 toPrimitiveModel :: [String] -> PrimitiveModel
 toPrimitiveModel s = prim_model where
   -- turns each paper in s into a list of words
@@ -33,7 +33,7 @@ toPrimitiveModel s = prim_model where
   -- and ((x,y),[t]), prim_model will contain value [z,t...] at key (x,y).
   prim_model = M.fromListWith (++) assocs
   
--- Takes a primitive model and spits out an intermediary model.
+-- |toIntermediaryModel: Takes a primitive model and spits out an intermediary model.
 toIntermediaryModel :: PrimitiveModel -> IntermediaryModel
 -- Counting the frequency of an element in a list is much easier when that list is sorted.
 toIntermediaryModel = M.map (freqCount.sort) where
@@ -45,7 +45,7 @@ toIntermediaryModel = M.map (freqCount.sort) where
       | a == b    = partialFreqCount ((n+1,a):as) bs
       | otherwise = partialFreqCount ((1,b):(n+1,a):as) bs
       
--- Takes an IntermediaryModel and spits out a ProcessedModel.
+-- |toProcessedModel: Takes an IntermediaryModel and spits out a ProcessedModel.
 -- The location of a string pair (x,y) in the ordering of the keys of the IntermediaryModel 
 -- will determine its id.
 toProcessedModel :: IntermediaryModel -> ProcessedModel
@@ -63,6 +63,6 @@ toProcessedModel interm = zip (map snd indices) (M.elems encodedMap) where
       | M.member (y,b) interm = (n,fromJust (M.lookup (y,b) indicesEncoding))
       | otherwise = (n,-1)
 
--- serialize: serializes a ProcessedModel
+-- |serialize: serializes a ProcessedModel
 serialize :: ProcessedModel -> String
-serialize = (intercalate "\n") . (map show)
+serialize = unlines . (map show)
