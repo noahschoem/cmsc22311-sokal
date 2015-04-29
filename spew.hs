@@ -9,12 +9,11 @@ import Data.List
 import System.Console.GetOpt
 import Data.Maybe
 
--- The following is simply for handling command line options.  I probably went a little overboard.
--- This is taken from 
-data Options = Options {optLength :: Int, optSeed :: Maybe Int, optHelp :: Bool} deriving (Eq,Show)
+-- The following is simply for handling command line options.  I probably went a little overboard on getting these to work.
+data Options = Options {optLength :: Int, optSeed :: Maybe Int, optShowSeed :: Bool, optHelp :: Bool} deriving (Eq,Show)
                
 defaultOptions :: Options
-defaultOptions = Options { optLength = 100, optSeed = Nothing, optHelp = False}
+defaultOptions = Options { optLength = 100, optSeed = Nothing, optShowSeed = False, optHelp = False}
 
 options :: [OptDescr (Options -> Options)]
 options = 
@@ -22,12 +21,16 @@ options =
       (ReqArg 
         (\i opts -> opts { optLength = read i }) 
         "L")
-      "desired length of spewed text"
+      "desired minumum length of spewed text.  Default is 100."
   , Option ['s'] ["seed"]
       (ReqArg 
         (\s opts -> opts {optSeed = Just (read s)})
         "S")
-      "user-supplied seed, if the user so desires"
+      "for the user to supply their own seed for the random number generator, if so desired"
+  , Option ['o'] ["show-seed"]
+      (NoArg
+        (\opts -> opts {optShowSeed = True}))
+      "show the value of the generator seed.  Default is suppressing the generator seed."
   , Option ['h'] ["help"]
       (NoArg
         (\opts -> opts {optHelp = True}))
@@ -44,18 +47,23 @@ main = do
   -- this may terminate the program if the optHelp flag has been set
   let opts = foldr id defaultOptions actions
   if (optHelp opts) then dumpHelp
-                    else genSpew (optLength opts) (optSeed opts)
+                    else genSpew opts
 
-genSpew :: Int -> Maybe Int -> IO ()
-genSpew len seed = do
+genSpew :: Options -> IO ()
+genSpew opts = do
   inputModel <- readFile "sokal.model" >>= (return.lines)
-  case seed of
-       Just a -> setStdGen (mkStdGen a)
+  case optSeed opts of
+       Just a  -> setStdGen (mkStdGen a)
+       Nothing -> return ()
   gen <- getStdGen
+  if optShowSeed opts
+     then hPutStrLn stderr $ "Seed is " ++ show gen
+     else return ()
   let fastModel = listArray (0,length inputModel - 1) (map read inputModel) :: FastModel
   let ws = evalState (runModel fastModel) gen
-  print $ intercalate " " $ takeEnough len ws
+  print $ unwords $ takeEnough (optLength opts) ws
   
+-- takeEnough: generates n words, then keeps generating words until the end of a sentence is reached.
 takeEnough :: Int -> [String] -> [String]
 takeEnough n (x:xs)
   | n > 0     = x:(takeEnough (n-1) xs)
@@ -101,5 +109,3 @@ linefill n (x:xs) = iter x xs where
     | length x + length y + 1 > n = x ++ "\n" ++ linefill n (y:ys)
     | otherwise                   = iter (x ++ " " ++ y) ys
   iter x [] = x ++ "\n"
-
- 
